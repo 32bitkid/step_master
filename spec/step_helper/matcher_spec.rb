@@ -159,6 +159,30 @@ module StepSensor
 					m.should include("I want <something>")
 				end				
 			end
+			
+			describe "regex with quotes around it" do
+				before :each do
+					@matcher << 'Given /^I want "([^\"]*)"$/ do |something|'
+				end	
+				
+				it "should auto complete" do
+					@matcher.complete("Given").should have(1).result
+				end
+				
+				it "should include \"Given I want \"pie\"\"" do
+					@matcher.match?("Given I want \"pie\"").should be_true
+				end
+				
+				it "should include \"Given I want 123\"" do
+					@matcher.match?("Given I want \"!@@\"").should be_true
+				end	
+				
+				it "should complete with variables names " do
+					m = @matcher.complete("Given", :easy => true)
+					m.should have(1).result
+					m.should include("I want \"<something>\"")
+				end				
+			end			
 		end		
 	end
 end
