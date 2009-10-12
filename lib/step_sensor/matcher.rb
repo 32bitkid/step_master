@@ -28,40 +28,42 @@ module StepSensor
 			@match_table = Possible.new
 		end
 		
-		
 		def <<(value)
 			raise "#{value.inspect} is not a step" unless value =~ STEP_REGEX
-			catalog $2.chomp("$").split.unshift($1), $&
+			
+			full_line = $&
+			elements = $2.chomp("$").split.unshift($1)
+			args_names = ($3 =~ /\|(.*)\|/) ? $1.split(',') : []
+			catalog elements, args_names, full_line
 		end
 		
 		def complete(string)
-			possible_strings match(string)
+			possible_strings find_possible(string)
 		end
 		
-		def include?(string)
-			return true
+		def match?(string)
+			return find_possible(string).terminal?
 		end
 			
 	private
 
-		def match(input, against = @match_table, matched = [])
+		def find_possible(input, against = @match_table, matched = [])
 			items = input.is_a?(String) ? input.split : input
 			while(i = items.shift)
 				matches = against.keys.select{ |x| Regexp.new(x).match(i) }
 				case matches.length
-					when 0 then return nil
+					when 0 then return Possible.new
 					when 1 then 
 						matched << matches.first
 						against = against[matches.first]
 					else
-						return matches.collect { |child_set| match2(items.dup, against[child_set], matched + [child_set]) }
+						return matches.collect { |child_set| find_possible(items.dup, against[child_set], matched + [child_set]) }
 				end
 			end
 			return against
 		end
 		
 		def possible_strings(hash, so_far = [], collection = [])
-			return [] unless hash
 			hash.each do |k,v|
 				collection << (so_far + [k]).join(" ") if v.terminal?
 				possible_strings(v, so_far + [k], collection) if v.length > 0
@@ -69,8 +71,7 @@ module StepSensor
 			collection
 		end
 
-		def catalog(items, result)
-			parent = nil
+		def catalog(items, args, result)
 			items.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(result)
 		end
 	end

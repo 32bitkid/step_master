@@ -121,6 +121,19 @@ module StepSensor
 				it "should include 'I want pie in the morning'" do
 					@matcher.complete("Given").should include("I want pie in the morning")
 				end
+				
+				it "should match to 'I want pie'" do
+					@matcher.match?("Given I want pie").should be_true
+				end
+				
+				it "should not match to 'I want pie in" do
+					@matcher.match?("Given I want pie in").should be_false
+				end
+
+				it "should match to 'I want pie in the morning" do
+					@matcher.match?("Given I want pie in the morning").should be_true
+				end
+				
 			end
 			
 			describe "simple regex variables" do
@@ -133,16 +146,13 @@ module StepSensor
 				end
 				
 				it "should include \"Given I want pie\"" do
-					@matcher.should include("Given I want pie")
+					@matcher.match?("Given I want pie").should be_true
 				end
 				
 				it "should not include \"Given I want 123\"" do
-					@matcher.should_not include("Given I want !@@")
+					@matcher.match?("Given I want !@@").should be_false
 				end				
-				
-				
 			end
-			
 		end		
 	end
 end
