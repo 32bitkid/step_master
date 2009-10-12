@@ -138,7 +138,7 @@ module StepSensor
 			
 			describe "simple regex variables" do
 				before :each do
-					@matcher << 'Given /^I want \w{3}$/ do |something|'
+					@matcher << 'Given /^I want (\w{3})$/ do |something|'
 				end	
 				
 				it "should auto complete" do
@@ -154,9 +154,9 @@ module StepSensor
 				end	
 				
 				it "should complete with variables names " do
-					m = @matcher.match?("Given", :easy => true)
+					m = @matcher.complete("Given", :easy => true)
 					m.should have(1).result
-					m.should include("I want [something]")
+					m.should include("I want <something>")
 					
 				end							
 			end
