@@ -151,7 +151,14 @@ module StepSensor
 				
 				it "should not include \"Given I want 123\"" do
 					@matcher.match?("Given I want !@@").should be_false
-				end				
+				end	
+				
+				it "should complete with variables names " do
+					m = @matcher.match?("Given", :easy => true)
+					m.should have(1).result
+					m.should include("I want [something]")
+					
+				end							
 			end
 		end		
 	end
