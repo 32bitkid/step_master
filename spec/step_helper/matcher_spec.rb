@@ -157,8 +157,7 @@ module StepSensor
 					m = @matcher.complete("Given", :easy => true)
 					m.should have(1).result
 					m.should include("I want <something>")
-					
-				end							
+				end				
 			end
 		end		
 	end

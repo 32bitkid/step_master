@@ -1,8 +1,12 @@
+require 'pp'
+
 module StepSensor
 	
 	class Possible < ::Hash
+		EMPTY = Possible.new		
+		
 		def terminal!(result)
-			@terminal = result
+			@terminal = result.freeze
 		end
 		
 		def terminal?
@@ -14,7 +18,7 @@ module StepSensor
 		end
 		
 		def inspect
-			super << "#{terminal? ? "["+result+"]" : "="}"
+			super << terminal? ? "["+result+"]" : ""
 		end
 	end
 	
@@ -22,31 +26,40 @@ module StepSensor
 		attr_reader :text
 		
 		def initialize(text)
-			@text = text
+			@text = text.freeze
 		end
 		
-		def to_regex
-			@regex = Regexp.new(text)
+		def to_regexp
+			@regex = Regexp.new(text).freeze
 		end
 		
-		def to_s
+		def to_s(options = {})
 			text
 		end
 		
 		def inspect
 			"<#{self.class} text=#{text.inspect}>"
 		end		
+		
+		def eql?(o)
+			o.is_a?(StepItem) && self.text == o.text
+		end
+		
+		def hash
+			text.hash
+		end
+		
 	end
 	
 	class StepVariable < StepItem
 		attr_reader :name
 		def initialize(text, name)
-			@text = text
-			@name = name
+			super(text)
+			@name = name.freeze
 		end	
 		
-		def to_s(type = :normal)
-			type == :normal ? super() : "<" << name << ">"
+		def to_s(options = {})
+			options[:easy] ? "<" << name << ">" : super()
 		end
 		
 		def inspect
@@ -57,7 +70,7 @@ module StepSensor
 	
 	class Matcher
 		
-		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/
+		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/.freeze
 		
 		attr_reader :match_table
 		
@@ -82,15 +95,13 @@ module StepSensor
 				regex.split(Regexp.union(arg_regexs.collect { |x|
 					Regexp.new(Regexp.escape(x))
 				})).collect { |x|
-					x.split
-				}.zip(arg_objects).flatten.compact.unshift(step_type)	
+					x.split.collect { |i| StepItem.new(i) }
+				}.zip(arg_objects).flatten.compact.unshift(StepItem.new(step_type))	
 			else
-				regex.split.unshift(step_type)
+				regex.split.unshift(step_type).collect { |i| StepItem.new(i) }
 			end
 			
-			p elements
-			
-			catalog elements, arg_names, full_line
+			elements.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(full_line)			
 		end
 		
 		def complete(string, options = {})
@@ -106,9 +117,9 @@ module StepSensor
 		def find_possible(input, against = @match_table, matched = [])
 			items = input.is_a?(String) ? input.split : input
 			while(i = items.shift)
-				matches = against.keys.select{ |x| Regexp.new(x.to_s).match(i) }
+				matches = against.keys.select{ |x| x.to_regexp.match(i) }
 				case matches.length
-					when 0 then return Possible.new
+					when 0 then return Possible::EMPTY
 					when 1 then 
 						matched << matches.first
 						against = against[matches.first]
@@ -121,22 +132,14 @@ module StepSensor
 		
 		def possible_strings(hash, options={}, so_far = [], collection = [])
 			hash.each do |k,v|
-				str = if options[:easy] and k.is_a? StepVariable
-					k.to_s(:name)
-				else
-					k.to_s
-				end
-				
+				str = k.to_s(options)
+
 				here = (so_far + [str])
 				
 				collection << here.join(" ") if v.terminal?
-				possible_strings(v, options, here, collection) if v.length > 0
+				possible_strings(v, options, here, collection)
 			end
 			collection
-		end
-
-		def catalog(items, args, result)
-			items.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(result)
 		end
 	end
 end
