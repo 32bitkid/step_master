@@ -95,7 +95,7 @@ module StepSensor
 			regex = $2.chomp("$")
 			args = $3
 			
-			arg_names = (args =~ ARG_NAMES_REGEX) ? $1.split(',') : []
+			arg_names = (args =~ ARG_NAMES_REGEX) ? $1.split(/\s*,\s*/) : []
 			arg_regexs = regex.chomp("$").scan(ARG_TEXT_REGEX)
 			
 			arg_objects = arg_regexs.zip(arg_names).collect { |x| StepVariable.new(*x) }

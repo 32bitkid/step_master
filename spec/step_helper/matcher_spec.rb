@@ -206,7 +206,7 @@ module StepSensor
 				end				
 			end
 
-			describe "more complex capture" do
+			describe "with more complex capture that could include spaces" do
 				before :each do
 					@matcher << 'Given /^I want "([^\"]*)" for dinner$/ do |something|'
 				end	
@@ -215,6 +215,21 @@ module StepSensor
 					@matcher.complete("Given I want \"steak and potatoes\"").should have(1).result
 				end
 			end
+			
+			describe "with multiple arguments" do
+				before :each do
+					@matcher << 'Given /^I want "([^\"]*)" in the "([^\"]*)"$/ do |food, time_of_day|'
+				end		
+				
+				it "should complete with variables names " do
+					m = @matcher.complete("Given", :easy => true)
+					m.should have(1).result
+					m.should include("I want \"<food>\" in the \"<time_of_day>\"")
+				end		 
+				
+			end
+			
+			
 			
 		end		
 	end
