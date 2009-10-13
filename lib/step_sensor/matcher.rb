@@ -60,11 +60,12 @@ module StepSensor
 			@name = name.freeze
 			
 			raise "#{@text.inspect} is not a variable!" unless @text =~ ARG_TEXT_REGEX
-			@easy = $` + @name + $'
+			@easy = $` + "<" + @name + ">" + $'
+			@easy.freeze
 		end	
 		
 		def to_s(options = {})
-			options[:easy] ? "<" << @easy << ">" : super()
+			options[:easy] ? @easy  : super()
 		end
 		
 		def inspect
@@ -93,7 +94,7 @@ module StepSensor
 			regex = $2.chomp("$")
 			args = $3
 			
-			arg_names = (args =~ ARG_SPLIT_REGEX) ? $1.split(',') : []
+			arg_names = (args =~ ARG_NAMES_REGEX) ? $1.split(',') : []
 			arg_regexs = regex.chomp("$").scan(ARG_TEXT_REGEX)
 			
 			arg_objects = arg_regexs.zip(arg_names).collect { |x| StepVariable.new(*x) }
