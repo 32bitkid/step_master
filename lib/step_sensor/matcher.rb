@@ -30,7 +30,7 @@ module StepSensor
 		end
 		
 		def to_regexp
-			@regex = Regexp.new(text).freeze
+			@regex = Regexp.new("^" << text).freeze
 		end
 		
 		def to_s(options = {})
@@ -118,25 +118,20 @@ module StepSensor
 		end
 		
 		def match?(string)
-			return find_possible(string).terminal?
+			find_possible(string).any?{ |x| x.terminal? }
 		end
-
-		def find_possible(input, against = @match_table, matched = [])
-			
-			items = input.is_a?(String) ? input.split : input
-			
-			while(i = items.shift)
-				matches = against.keys.select{ |x| x.to_regexp.match(i) }
-				case matches.length
-					when 0 then return Possible::EMPTY
-					when 1 then 
-						matched << matches.first
-						against = against[matches.first]
+		
+		def find_possible(input, against = @match_table)
+			return against.keys.collect do |x|
+				if x.to_regexp.match(input) 
+					new_input = $'.lstrip
+					unless new_input.empty?
+						find_possible new_input, against[x]
 					else
-						return matches.collect { |child_set| find_possible(items.dup, against[child_set], matched + [child_set]) }
+						against[x]
+					end
 				end
-			end
-			return against
+			end.flatten.compact
 		end
 		
 		def possible_strings(possible, options={}, so_far = [], collection = [])
