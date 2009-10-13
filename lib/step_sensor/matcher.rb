@@ -18,7 +18,7 @@ module StepSensor
 		end
 		
 		def inspect
-			super << terminal? ? "["+result+"]" : ""
+			super << ((terminal? )? "["+result+"]" : "")
 		end
 	end
 	
@@ -38,11 +38,11 @@ module StepSensor
 		end
 		
 		def inspect
-			"<#{self.class} text=#{text.inspect}>"
+			text.inspect
 		end		
 		
 		def eql?(o)
-			o.is_a?(StepItem) && self.text == o.text
+			o.is_a?(StepItem) && self.text.eql?(o.text)
 		end
 		
 		def hash
@@ -58,7 +58,7 @@ module StepSensor
 		
 		def initialize(text, name)
 			super(text)
-			@name = name.freeze
+			@name = (name || "unknown").freeze
 			
 			raise "#{@text.inspect} is not a variable!" unless @text =~ ARG_TEXT_REGEX
 			@easy = $` + "<" + @name + ">" + $'
@@ -70,14 +70,14 @@ module StepSensor
 		end
 		
 		def inspect
-			"<#{self.class} text=#{text.inspect} name=#{name.inspect}>"
+			"#{text.inspect}:#{name.inspect}"
 		end
 	end
 	
 	
 	class Matcher
 		
-		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/.freeze
+		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/\w*\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/.freeze
 		ARG_NAMES_REGEX = /\|(.*)\|/
 		ARG_TEXT_REGEX = /\S*\(.*?[^\\]\)\S*/
 		
@@ -109,7 +109,7 @@ module StepSensor
 			else
 				regex.split.unshift(step_type).collect { |i| StepItem.new(i) }
 			end
-			
+						
 			elements.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(full_line)			
 		end
 		
@@ -120,11 +120,11 @@ module StepSensor
 		def match?(string)
 			return find_possible(string).terminal?
 		end
-			
-	private
 
 		def find_possible(input, against = @match_table, matched = [])
+			
 			items = input.is_a?(String) ? input.split : input
+			
 			while(i = items.shift)
 				matches = against.keys.select{ |x| x.to_regexp.match(i) }
 				case matches.length
@@ -139,14 +139,18 @@ module StepSensor
 			return against
 		end
 		
-		def possible_strings(hash, options={}, so_far = [], collection = [])
-			hash.each do |k,v|
-				str = k.to_s(options)
+		def possible_strings(possible, options={}, so_far = [], collection = [])
+			if possible.is_a?(Array)
+				possible.each { |a| possible_strings(a, options, so_far, collection) }
+			else
+				possible.each do |k,v|
+					str = k.to_s(options)
 
-				here = (so_far + [str])
-				
-				collection << here.join(" ") if v.terminal?
-				possible_strings(v, options, here, collection)
+					here = (so_far + [str])
+					
+					collection << here.join(" ") if v.terminal?
+					possible_strings(v, options, here, collection)
+				end
 			end
 			collection
 		end

@@ -204,7 +204,18 @@ module StepSensor
 					m.should have(1).result
 					m.should include("I want \"<something>\"")
 				end				
-			end			
+			end
+
+			describe "more complex capture" do
+				before :each do
+					@matcher << 'Given /^I want "([^\"]*)" for dinner$/ do |something|'
+				end	
+				
+				it "should handle more than one word inside quotes" do
+					@matcher.complete("Given I want \"steak and potatoes\"").should have(1).result
+				end
+			end
+			
 		end		
 	end
 end
