@@ -27,7 +27,58 @@ module StepSensor
 			end
 		end
 		
-		describe "#match" do
+		describe "#match?" do
+			
+			describe "with a terminal and longer step" do
+				before :each do
+					@matcher << "Given /^I want pie$/ do"
+					@matcher << "Given /^I want pie in the morning$/ do"
+				end
+							
+				it "should match to 'I want pie'" do
+					@matcher.match?("Given I want pie").should be_true
+				end
+				
+				it "should not match to 'I want pie in" do
+					@matcher.match?("Given I want pie in").should be_false
+				end
+
+				it "should match to 'I want pie in the morning" do
+					@matcher.match?("Given I want pie in the morning").should be_true
+				end			
+			end
+			
+			describe "with a simple regex variable" do
+				before :each do
+					@matcher << 'Given /^I want (\w{3})$/ do |something|'
+				end	
+				
+				it "should match \"Given I want pie\"" do
+					@matcher.match?("Given I want pie").should be_true
+				end					
+				
+				it "should not match \"Given I want !@@\"" do
+					@matcher.match?("Given I want !@@").should be_false
+				end	
+			end
+			
+			describe "with regex with quotes around it" do
+				before :each do
+					@matcher << 'Given /^I want "([^\"]*)"$/ do |something|'
+				end	
+				
+				it "should match \"Given I want \"pie\"\"" do
+					@matcher.match?("Given I want \"pie\"").should be_true
+				end
+				
+				it "should match \"Given I want \"123\"\"" do
+					@matcher.match?("Given I want \"!@@\"").should be_true
+				end			
+			end				
+		end
+		
+		
+		describe "#complete" do
 			it "accepts a string" do
 				@matcher.complete("Given")
 			end
@@ -37,13 +88,13 @@ module StepSensor
 				@matcher.complete("Given").should eql(["nothing"])
 			end
 			
-			describe "two simple steps given" do
+			describe "with two simple steps given" do
 				before(:each) do 
 					@matcher << "Given /^this$/ do"
 					@matcher << "Given /^that$/ do"					
 				end
 				
-				it "should return results when search for 'Given'" do
+				it "should return 2 results when search for 'Given'" do
 					@matcher.complete("Given").should have(2).results
 				end
 				
@@ -60,7 +111,7 @@ module StepSensor
 				end
 			end
 			
-			describe "simple branching steps" do
+			describe "with some simple branching steps" do
 				before(:each) do
 					@matcher << "Given /^I want pie$/ do"
 					@matcher << "Given /^I want cake$/ do"		
@@ -104,7 +155,7 @@ module StepSensor
 				end				
 			end
 			
-			describe "a terminal and longer step" do
+			describe "with a terminal and longer step" do
 				before :each do
 					@matcher << "Given /^I want pie$/ do"
 					@matcher << "Given /^I want pie in the morning$/ do"
@@ -121,22 +172,9 @@ module StepSensor
 				it "should include 'I want pie in the morning'" do
 					@matcher.complete("Given").should include("I want pie in the morning")
 				end
-				
-				it "should match to 'I want pie'" do
-					@matcher.match?("Given I want pie").should be_true
-				end
-				
-				it "should not match to 'I want pie in" do
-					@matcher.match?("Given I want pie in").should be_false
-				end
-
-				it "should match to 'I want pie in the morning" do
-					@matcher.match?("Given I want pie in the morning").should be_true
-				end
-				
 			end
 			
-			describe "simple regex variables" do
+			describe "with a simple regex variable" do
 				before :each do
 					@matcher << 'Given /^I want (\w{3})$/ do |something|'
 				end	
@@ -145,14 +183,6 @@ module StepSensor
 					@matcher.complete("Given").should have(1).result
 				end
 				
-				it "should include \"Given I want pie\"" do
-					@matcher.match?("Given I want pie").should be_true
-				end
-				
-				it "should not include \"Given I want 123\"" do
-					@matcher.match?("Given I want !@@").should be_false
-				end	
-				
 				it "should complete with variables names " do
 					m = @matcher.complete("Given", :easy => true)
 					m.should have(1).result
@@ -160,7 +190,7 @@ module StepSensor
 				end				
 			end
 			
-			describe "regex with quotes around it" do
+			describe "with regex with quotes around it" do
 				before :each do
 					@matcher << 'Given /^I want "([^\"]*)"$/ do |something|'
 				end	
@@ -168,14 +198,6 @@ module StepSensor
 				it "should auto complete" do
 					@matcher.complete("Given").should have(1).result
 				end
-				
-				it "should include \"Given I want \"pie\"\"" do
-					@matcher.match?("Given I want \"pie\"").should be_true
-				end
-				
-				it "should include \"Given I want 123\"" do
-					@matcher.match?("Given I want \"!@@\"").should be_true
-				end	
 				
 				it "should complete with variables names " do
 					m = @matcher.complete("Given", :easy => true)

@@ -55,6 +55,7 @@ module StepSensor
 		ARG_TEXT_REGEX = /\(.*?[^\\]\)/
 		
 		attr_reader :name
+		
 		def initialize(text, name)
 			super(text)
 			@name = name.freeze
