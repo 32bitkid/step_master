@@ -52,14 +52,19 @@ module StepSensor
 	end
 	
 	class StepVariable < StepItem
+		ARG_TEXT_REGEX = /\(.*?[^\\]\)/
+		
 		attr_reader :name
 		def initialize(text, name)
 			super(text)
 			@name = name.freeze
+			
+			raise "#{@text.inspect} is not a variable!" unless @text =~ ARG_TEXT_REGEX
+			@easy = $` + @name + $'
 		end	
 		
 		def to_s(options = {})
-			options[:easy] ? "<" << name << ">" : super()
+			options[:easy] ? "<" << @easy << ">" : super()
 		end
 		
 		def inspect
@@ -71,6 +76,8 @@ module StepSensor
 	class Matcher
 		
 		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/.freeze
+		ARG_NAMES_REGEX = /\|(.*)\|/
+		ARG_TEXT_REGEX = /\S*\(.*?[^\\]\)\S*/
 		
 		attr_reader :match_table
 		
@@ -86,8 +93,8 @@ module StepSensor
 			regex = $2.chomp("$")
 			args = $3
 			
-			arg_names = (args =~ /\|(.*)\|/) ? $1.split(',') : []
-			arg_regexs = regex.chomp("$").scan(/\S*\(.*?[^\\]\)\S*/)
+			arg_names = (args =~ ARG_SPLIT_REGEX) ? $1.split(',') : []
+			arg_regexs = regex.chomp("$").scan(ARG_TEXT_REGEX)
 			
 			arg_objects = arg_regexs.zip(arg_names).collect { |x| StepVariable.new(*x) }
 			
