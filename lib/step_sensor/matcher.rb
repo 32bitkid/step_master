@@ -58,10 +58,11 @@ module StepSensor
 		
 		def initialize(text, name)
 			super(text)
-			@name = (name || "unknown").freeze
+			@name = name.freeze
 			
 			raise "#{@text.inspect} is not a variable!" unless @text =~ ARG_TEXT_REGEX
-			@easy = $` + "<" + @name + ">" + $'
+			@easy = @name.nil? ? @text : $` + "<" + @name + ">" + $'
+				
 			@easy.freeze
 		end	
 		
@@ -80,6 +81,7 @@ module StepSensor
 		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/\w*\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/.freeze
 		ARG_NAMES_REGEX = /\|(.*)\|/
 		ARG_TEXT_REGEX = /\S*\(.*?[^\\]\)\S*/
+		NON_CAPTURE_REGEX = /\(\?\:/
 		
 		attr_reader :match_table
 		
@@ -98,7 +100,11 @@ module StepSensor
 			arg_names = (args =~ ARG_NAMES_REGEX) ? $1.split(/\s*,\s*/) : []
 			arg_regexs = regex.chomp("$").scan(ARG_TEXT_REGEX)
 			
-			arg_objects = arg_regexs.zip(arg_names).collect { |x| StepVariable.new(*x) }
+			arg_objects = arg_regexs.collect do |x|
+				is_non_capture = (x =~ NON_CAPTURE_REGEX) != nil
+				StepVariable.new(x, (is_non_capture) ? nil : arg_names.shift)
+			end
+			
 			
 			elements = if arg_regexs.length > 0
 				regex.split(Regexp.union(arg_regexs.collect { |x|

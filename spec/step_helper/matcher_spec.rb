@@ -226,10 +226,25 @@ module StepSensor
 					m.should have(1).result
 					m.should include("I want \"<food>\" in the \"<time_of_day>\"")
 				end		 
-				
 			end
 			
-			
+			describe "with non captures" do
+				
+				it "should correctly match one variables name" do
+					@matcher << %q[Given /^I want "(?:[^\"]*)" in the "([^\"]*)"$/ do |time_of_day|]
+					m = @matcher.complete("Given", :easy => true)
+					m.should have(1).result
+					m.should include(%q[I want "(?:[^\"]*)" in the "<time_of_day>"])
+				end		 
+				
+				it "should correctly match two variables name" do
+					@matcher << %q[Given /^I (\w{4}) "(?:[^\"]*)" in the "([^\"]*)"$/ do |type, time_of_day|]
+					m = @matcher.complete("Given", :easy => true)
+					m.should have(1).result
+					m.should include(%q[I <type> "(?:[^\"]*)" in the "<time_of_day>"])
+				end		 
+				
+			end			
 			
 		end		
 	end
