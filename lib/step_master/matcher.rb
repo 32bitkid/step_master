@@ -1,83 +1,8 @@
-require 'pp'
+require 'step_master/step_item'
+require 'step_master/step_variable'
+require 'step_master/possible'
 
-module StepSensor
-	
-	class Possible < ::Hash
-		EMPTY = Possible.new		
-		
-		def terminal!(result)
-			@terminal = result.freeze
-		end
-		
-		def terminal?
-			!@terminal.nil?
-		end
-		
-		def result
-			@terminal
-		end
-		
-		def inspect
-			super << ((terminal? )? "["+result+"]" : "")
-		end
-	end
-	
-	class StepItem
-		attr_reader :text, :options
-		
-		def initialize(text, opts)
-			@text = text.freeze
-			@options = 0
-			@options |= (opts.match(/i/) ? Regexp::IGNORECASE : 0)
-		end
-		
-		def to_regexp
-			@regex = Regexp.new("^" << text, options).freeze
-		end
-		
-		def to_s(options = {})
-			text
-		end
-		
-		def inspect
-			text.inspect
-		end		
-		
-		def eql?(o)
-			o.is_a?(StepItem) && self.text.eql?(o.text)
-		end
-		
-		def hash
-			text.hash
-		end
-		
-	end
-	
-	class StepVariable < StepItem
-		ARG_TEXT_REGEX = /\(.*?[^\\]\)/
-		
-		attr_reader :name
-		
-		def initialize(text, options, name)
-			super(text, options)
-			@name = name.freeze
-			
-			raise "#{@text.inspect} is not a variable!" unless @text =~ ARG_TEXT_REGEX
-			@easy = @name.nil? ? @text : $` + "<" + @name + ">" + $'
-				
-			@easy.freeze
-		end	
-		
-		def to_s(options = {})
-			options[:easy] ? @easy  : super()
-		end
-		
-		def inspect
-			"#{text.inspect}:#{name.inspect}"
-		end
-	end
-	
-	
+module StepMaster
 	class Matcher
 		
 		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/(\w*)\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/.freeze

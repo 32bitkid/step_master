@@ -1,8 +1,8 @@
 #!/usr/bin/ruby
 $: << File.join(File.dirname(__FILE__), "lib")
-require 'step_sensor'
+require 'step_master'
 
-MATCHER = StepSensor::Matcher.new			
+MATCHER = StepMaster::Matcher.new			
 
 (Dir[File.join(File.expand_path("~"), %w[src Clearwave Kiosk KioskMVC  Features features ** *.rb])] +
 Dir[File.join(File.expand_path("~"), %w[src Clearwave Common Features ** *.rb])]).each do |f|

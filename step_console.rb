@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 $: << File.join(File.dirname(__FILE__), "lib")
-require 'step_sensor'
+require 'step_master'
 require 'readline'
 
 stty_save = `stty -g`.chomp
@@ -8,7 +8,7 @@ trap('INT') { puts; system('stty', stty_save); exit }
 
 OPTS = {:easy => false}
 
-MATCHER = StepSensor::Matcher.new			
+MATCHER = StepMaster::Matcher.new			
 
 Readline.completer_word_break_characters = '' 
 Readline.completion_append_character = ''
