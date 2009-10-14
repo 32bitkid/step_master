@@ -1,17 +1,26 @@
-require 'spec/rake/spectask'
-require 'rake/rdoctask'
+require 'rubygems'
+gem 'hoe', '>= 2.1.0'
+require 'hoe'
+require 'fileutils'
+require './lib/step_master'
 
-desc "Default Task"
-task :default => :spec
+Hoe.plugin :newgem
+# Hoe.plugin :website
+# Hoe.plugin :cucumberfeatures
 
-desc "Run all examples"
-Spec::Rake::SpecTask.new('spec') do |t|
-  t.spec_files = FileList['spec/**/*.rb']
+# Generate all the Rake tasks
+# Run 'rake -T' to see list of generated tasks (from gem root directory)
+$hoe = Hoe.spec 'step_master' do
+  self.developer 'Jim Holmes', '32bitkid@gmail.com'
+  self.post_install_message = 'PostInstall.txt' # TODO remove if post-install message not required
+  self.rubyforge_name       = self.name # TODO this is default value
+  # self.extra_deps         = [['activesupport','>= 2.0.2']]
+
 end
 
-rd = Rake::RDocTask.new("rdoc") { |rdoc|
-  rdoc.rdoc_dir = 'doc'
-  rdoc.title    = "StepMaster"
-  rdoc.options << '--line-numbers' << '--inline-source' << '--main' << 'README'
-  rdoc.rdoc_files.include('lib/**/*.rb', 'README')
-}
+require 'newgem/tasks'
+Dir['tasks/**/*.rake'].each { |t| load t }
+
+# TODO - want other tests/tasks run by default? Add them to the list
+# remove_task :default
+# task :default => [:spec, :features]
