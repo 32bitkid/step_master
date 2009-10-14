@@ -1,0 +1,25 @@
+= StepMaster
+
+== Goal
+
+Provide a simple and easy way to find and auto-complete gherkin steps, when writing cucumber features
+
+== Classes
+
+StepMaster::Matcher:: Match steps
+
+== Usage
+
+	require 'step_master'
+
+	matcher = StepMaster::Matcher.new			
+	matcher << "Given /^I like pie$/ do"
+	matcher << "Given /^I like cake$/ do"
+	
+	matcher.complete("Given I like") #=> ["pie", "cake"]
+	
+
+== Contact
+Author::			Jim Holmes
+Email::				32bitkid@gmail.com
+License::    	MIT Licence (http://www.opensource.org/licenses/mit-license.html)
