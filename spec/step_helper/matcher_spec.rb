@@ -85,7 +85,7 @@ module StepSensor
 			
 			it "should be able to match a simple step" do
 				@matcher << VALID_STEP
-				@matcher.complete("Given").should eql(["nothing"])
+				@matcher.complete("Given").should include(" nothing")
 			end
 			
 			describe "with two simple steps given" do
@@ -99,11 +99,11 @@ module StepSensor
 				end
 				
 				it "should return 'this' when search for 'Given'" do
-					@matcher.complete("Given").should include("this")
+					@matcher.complete("Given").should include(" this")
 				end
 				
 				it "should return 'that' when search for 'Given'" do
-					@matcher.complete("Given").should include("that")
+					@matcher.complete("Given").should include(" that")
 				end
 				
 				it "should return no results when search for 'Given this'" do
@@ -123,15 +123,15 @@ module StepSensor
 				end
 				
 				it "should include 'I want pie' when searched for 'Given'" do
-					@matcher.complete("Given").should include("I want pie")
+					@matcher.complete("Given").should include(" I want pie")
 				end
 				
 				it "should include 'I want cake' when searched for 'Given'" do
-					@matcher.complete("Given").should include("I want cake")
+					@matcher.complete("Given").should include(" I want cake")
 				end				
 				
 				it "should include 'I can swim' when searched for 'Given'" do
-					@matcher.complete("Given").should include("I can swim")
+					@matcher.complete("Given").should include(" I can swim")
 				end
 				
 				it "should return 2 results when search for 'Given I want'" do
@@ -139,11 +139,11 @@ module StepSensor
 				end
 				
 				it "should include 'pie' when searched for 'Given'" do
-					@matcher.complete("Given I want").should include("pie")
+					@matcher.complete("Given I want").should include(" pie")
 				end
 				
 				it "should include 'cake' when searched for 'Given'" do
-					@matcher.complete("Given I want").should include("cake")
+					@matcher.complete("Given I want").should include(" cake")
 				end						
 				
 				it "should return 1 result when search for 'Given I can'" do
@@ -151,7 +151,7 @@ module StepSensor
 				end												
 				
 				it "should include 'swim' when searched for 'Given'" do
-					@matcher.complete("Given I can").should include("swim")
+					@matcher.complete("Given I can").should include(" swim")
 				end				
 			end
 			
@@ -166,11 +166,11 @@ module StepSensor
 				end
 				
 				it "should include 'I want pie'" do
-					@matcher.complete("Given").should include("I want pie")
+					@matcher.complete("Given").should include(" I want pie")
 				end
 				
 				it "should include 'I want pie in the morning'" do
-					@matcher.complete("Given").should include("I want pie in the morning")
+					@matcher.complete("Given").should include(" I want pie in the morning")
 				end
 			end
 			
@@ -186,7 +186,7 @@ module StepSensor
 				it "should complete with variables names " do
 					m = @matcher.complete("Given", :easy => true)
 					m.should have(1).result
-					m.should include("I want <something>")
+					m.should include(" I want <something>")
 				end				
 			end
 			
@@ -202,7 +202,7 @@ module StepSensor
 				it "should complete with variables names " do
 					m = @matcher.complete("Given", :easy => true)
 					m.should have(1).result
-					m.should include("I want \"<something>\"")
+					m.should include(" I want \"<something>\"")
 				end				
 			end
 
@@ -224,7 +224,7 @@ module StepSensor
 				it "should complete with variables names " do
 					m = @matcher.complete("Given", :easy => true)
 					m.should have(1).result
-					m.should include("I want \"<food>\" in the \"<time_of_day>\"")
+					m.should include(" I want \"<food>\" in the \"<time_of_day>\"")
 				end		 
 			end
 			
@@ -234,17 +234,42 @@ module StepSensor
 					@matcher << %q[Given /^I want "(?:[^\"]*)" in the "([^\"]*)"$/ do |time_of_day|]
 					m = @matcher.complete("Given", :easy => true)
 					m.should have(1).result
-					m.should include(%q[I want "(?:[^\"]*)" in the "<time_of_day>"])
+					m.should include(%q[ I want "(?:[^\"]*)" in the "<time_of_day>"])
 				end		 
 				
 				it "should correctly match two variables name" do
 					@matcher << %q[Given /^I (\w{4}) "(?:[^\"]*)" in the "([^\"]*)"$/ do |type, time_of_day|]
 					m = @matcher.complete("Given", :easy => true)
 					m.should have(1).result
-					m.should include(%q[I <type> "(?:[^\"]*)" in the "<time_of_day>"])
+					m.should include(%q[ I <type> "(?:[^\"]*)" in the "<time_of_day>"])
 				end		 
 				
+			end	
+
+			describe "with an optional space" do
+				before :each do
+					@matcher << %q~Given /^(?:a )?provider ?location (?:named |called )?"([^\"]*)" exists$/i do |name|~
+				end
+				
+				it "should correctly auto-complete" do 
+					@matcher.complete("Given provider location").should have(1).result
+					@matcher.complete("Given a provider location").should have(1).result
+					@matcher.complete("Given providerlocation").should have(1).result
+				end
+			end
+			
+			describe "with an case insensitive switch" do
+				before :each do
+					@matcher << %q~Given /^(?:a )?provider ?location (?:named |called )?"([^\"]*)" exists$/i do |name|~
+				end
+				
+				it "should correctly auto-complete" do 
+					@matcher.complete("Given provider location").should have(1).result
+					@matcher.complete("Given a Provider Location").should have(1).result
+					@matcher.complete("Given ProviderLocation").should have(1).result
+				end
 			end			
+			
 			
 		end		
 	end
