@@ -22,5 +22,5 @@ end.flatten
 while(str = Readline.readline('> ', true))
 	break if str[/exit/i]
 	OPTS[:easy] = !OPTS[:easy] if str == "easy"
-	puts MATCHER.match?(str) ? "Found" : "Not Found"
+	puts MATCHER.is_match?(str) ? "Found" : "Not Found"
 end

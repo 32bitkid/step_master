@@ -52,7 +52,7 @@ module StepMaster
 			possible_strings find_possible(string), options
 		end
 		
-		def match?(string)
+		def is_match?(string)
 			find_possible(string).any?{ |x| x.terminal? }
 		end
 		

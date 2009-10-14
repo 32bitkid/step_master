@@ -27,7 +27,7 @@ module StepMaster
 			end
 		end
 		
-		describe "#match?" do
+		describe "#is_match?" do
 			
 			describe "with a terminal and longer step" do
 				before :each do
@@ -36,15 +36,15 @@ module StepMaster
 				end
 							
 				it "should match to 'I want pie'" do
-					@matcher.match?("Given I want pie").should be_true
+					@matcher.is_match?("Given I want pie").should be_true
 				end
 				
 				it "should not match to 'I want pie in" do
-					@matcher.match?("Given I want pie in").should be_false
+					@matcher.is_match?("Given I want pie in").should be_false
 				end
 
 				it "should match to 'I want pie in the morning" do
-					@matcher.match?("Given I want pie in the morning").should be_true
+					@matcher.is_match?("Given I want pie in the morning").should be_true
 				end			
 			end
 			
@@ -54,11 +54,11 @@ module StepMaster
 				end	
 				
 				it "should match \"Given I want pie\"" do
-					@matcher.match?("Given I want pie").should be_true
+					@matcher.is_match?("Given I want pie").should be_true
 				end					
 				
 				it "should not match \"Given I want !@@\"" do
-					@matcher.match?("Given I want !@@").should be_false
+					@matcher.is_match?("Given I want !@@").should be_false
 				end	
 			end
 			
@@ -68,11 +68,11 @@ module StepMaster
 				end	
 				
 				it "should match \"Given I want \"pie\"\"" do
-					@matcher.match?("Given I want \"pie\"").should be_true
+					@matcher.is_match?("Given I want \"pie\"").should be_true
 				end
 				
 				it "should match \"Given I want \"123\"\"" do
-					@matcher.match?("Given I want \"!@@\"").should be_true
+					@matcher.is_match?("Given I want \"!@@\"").should be_true
 				end			
 			end				
 		end
