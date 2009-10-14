@@ -27,7 +27,7 @@ none
 
 == INSTALL:
 
-	sudo gem install clearwavebuild-step_master -s http://gems.github.com
+	sudo gem install step_master -s http://32bitkid.gemcutter.org
 
 == LICENSE:
 
