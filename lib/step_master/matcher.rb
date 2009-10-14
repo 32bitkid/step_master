@@ -1,21 +1,12 @@
 #!/usr/bin/env ruby
-#--
-# Copyright 2009 by Jim Holmes (jim@32bitkid.com).
-# All rights reserved.
-
-# Permission is granted for use, copying, modification, distribution,
-# and distribution of modified versions of this work as long as the
-# above copyright notice is included.
-#++
-
-# Provide a simple and easy way to find and auto-complete gherkin steps,
-# when writing cucumber features
-# See StepMaster for usage details.
 
 require 'step_master/step_item'
 require 'step_master/step_variable'
 require 'step_master/possible'
 
+# Provide a simple and easy way to find and auto-complete gherkin steps,
+# when writing cucumber features
+# See StepMaster for usage details.
 module StepMaster
 
 	# This class collects raw steps as strings.
