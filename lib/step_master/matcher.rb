@@ -1,8 +1,32 @@
+#!/usr/bin/env ruby
+#--
+# Copyright 2009 by Jim Holmes (jim@32bitkid.com).
+# All rights reserved.
+
+# Permission is granted for use, copying, modification, distribution,
+# and distribution of modified versions of this work as long as the
+# above copyright notice is included.
+#++
+
+# Provide a simple and easy way to find and auto-complete gherkin steps,
+# when writing cucumber features
+# See StepMaster for usage details.
+
 require 'step_master/step_item'
 require 'step_master/step_variable'
 require 'step_master/possible'
 
 module StepMaster
+
+	# This class collects raw steps as strings.
+	# 
+  # The complete method returns a list of all possible
+	# steps that start with a given string (taking into
+	# account captures and imbedded regexps).
+	# 
+	# The is_match? method lets you check if a string exactly
+	# matches to a step definition
+	#
 	class Matcher
 		
 		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/(\w*)\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/.freeze
@@ -17,6 +41,11 @@ module StepMaster
 			@match_table = Possible.new
 		end
 		
+		# Insert a Ruby Step definition into the Match Table
+		#
+		# ==== Examples
+		#	  matcher << "Given /^this is a step$/ do"
+		#
 		def <<(value)
 			raise "#{value.inspect} is not a step" unless value =~ STEP_REGEX
 			
@@ -48,14 +77,32 @@ module StepMaster
 			elements.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(full_line)			
 		end
 		
+		# Returns all possible outcomes of a string.
+		#
+		# ==== Parameters
+		# * +string+ - The string to try to auto complete
+		# * +options+ - :easy => true will replace captures with the variable names in the step definition
+		#
+		# ==== Examples
+		#   matcher.complete("Given this")
+		#   matcher.complete("Given this", :easy => true)
+		#
 		def complete(string, options = {})
 			possible_strings find_possible(string), options
 		end
 		
+		# Returns true if the string matches exactly to a step definition
+		#
+		# ==== Examples
+		#   matcher << "Given /^this$/ do"
+		#   matcher.is_match?("Given this") #=> true
+		#   matcher.is_match?("Given that") #=> false
+		#
 		def is_match?(string)
 			find_possible(string).any?{ |x| x.terminal? }
 		end
 		
+private
 		def find_possible(input, against = @match_table)
 			return against.keys.collect do |x|
 				if input =~ x.to_regexp
