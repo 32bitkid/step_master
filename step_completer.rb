@@ -9,7 +9,7 @@ settings = File.exists?("settings.yml") ? YAML.load_file("settings.yml")  : {"st
 
 settings["step_paths"].collect { |x| Dir[x] }.flatten.uniq.each do |f|
 	IO.readlines(f).each_with_index do |str, line|
-		MATCHER << str + " # " + File.basename(f) + ":" + (line + 1).to_s if str =~ /^(Given|Then|When)/
+		MATCHER << str.chomp + " # " + File.basename(f) + ":" + (line + 1).to_s if str =~ /^(Given|Then|When)/
 	end
 end
 
