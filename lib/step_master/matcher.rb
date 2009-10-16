@@ -28,8 +28,8 @@ module StepMaster
 		
 		attr_reader :match_table
 		
-		def initialize
-			@match_table = Possible.new
+		def initialize(match_table = Possible.new )
+			@match_table = match_table
 		end
 		
 		# Insert a Ruby Step definition into the Match Table
