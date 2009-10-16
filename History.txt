@@ -1,3 +1,7 @@
+=== 0.0.3 2009-10-16
+
+* Loading from raw parse_table rather than having to parse the steps
+
 === 0.0.2 2009-10-15
 
 * Added where_is?(step) for finding which file a step is in
