@@ -2,7 +2,7 @@ module StepMaster
 	class StepItem
 		attr_reader :text, :options
 		
-		def initialize(text, opts)
+		def initialize(text, opts = "")
 			@text = text.freeze
 			@options = 0
 			@options |= (opts.match(/i/) ? Regexp::IGNORECASE : 0)

@@ -74,7 +74,17 @@ module StepMaster
 				it "should match \"Given I want \"123\"\"" do
 					@matcher.is_match?("Given I want \"!@@\"").should be_true
 				end			
-			end				
+			end	
+
+			describe "with step with a comment" do
+				before :each do
+					@matcher << %q~Given /^this$/i do |name| # This is a comment~
+				end
+				
+				it "should correctly match" do
+					@matcher.is_match?("Given this").should be_true
+				end
+			end	
 		end
 		
 		
@@ -284,7 +294,7 @@ module StepMaster
 			
 			
 			
-			describe "with an case insensitive switch" do
+			describe "with step with a comment" do
 				before :each do
 					@matcher << %q~Given /^this$/i do |name| # This is a comment~
 				end
@@ -292,20 +302,39 @@ module StepMaster
 				it "should correctly auto-complete" do 
 					@matcher.complete("Given").should have(1).result
 				end
-				
-				it "should correctly match" do
-					@matcher.is_match?("Given this").should be_true
+			end	
+			
+		end		
+		describe "#where_is?" do 
+			describe "with step with a comment" do
+				before :each do
+					@matcher << %q~Given /^this$/i do |name| # This is a comment~
 				end
 				
 				it "should return the original line with where_is?" do
 					@matcher.where_is?("Given this").should include(%q~Given /^this$/i do |name| # This is a comment~)
 				end
-				
-				
-			end			
-						
-			
-			
-		end		
+			end
+		end
 	end
+	
+	describe Matcher do
+		describe "swith a pre-parsed match table" do
+			
+			before :each do
+				p = Possible.new
+				p[si = StepItem.new("Given")] = Possible.new
+				p[si][si2 = StepItem.new(" ")] = Possible.new()
+				(p[si][si2][StepItem.new("this")] = Possible.new()).terminal!("Given this")
+				
+				@matcher = Matcher.new(p)
+			end
+			
+			it "should be able to perform a simple match" do
+				@matcher.is_match?("Given this").should be_true
+			end
+		end
+		
+	end
+	
 end
