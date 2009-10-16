@@ -8,8 +8,11 @@ MATCHER = StepMaster::Matcher.new
 settings = File.exists?("settings.yml") ? YAML.load_file("settings.yml")  : {"step_paths" => ["**/*.rb"] }
 
 settings["step_paths"].collect { |x| Dir[x] }.flatten.uniq.each do |f|
-	IO.read(f).scan(/^((?:Given|Then|When)[^\r\n]*)/).flatten.each { |step| MATCHER << step }
-end.flatten
+	IO.readlines(f).each_with_index do |str, line|
+		MATCHER << str + " # " + File.basename(f) + ":" + (line + 1).to_s if str =~ /^(Given|Then|When)/
+	end
+end
+
 
 query = ARGV.join(" ")
 

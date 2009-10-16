@@ -18,11 +18,14 @@ Readline.completion_append_character = ''
 Readline.completion_proc = proc { |s| MATCHER.complete(s, :easy => true).collect { |x| s + x } }
 
 settings["step_paths"].collect { |x| Dir[x] }.flatten.uniq.each do |f|
-	IO.read(f).scan(/^((?:Given|Then|When)[^\r\n]*)/).flatten.each { |step| MATCHER << step }
-end.flatten
+	IO.readlines(f).each_with_index do |str, line|
+		MATCHER << str + " # " + File.basename(f) + ":" + (line + 1).to_s if str =~ /^(Given|Then|When)/
+	end
+end
+
 
 while(str = Readline.readline('> ', true))
 	break if str[/exit/i]
 	OPTS[:easy] = !OPTS[:easy] if str == "easy"
-	puts MATCHER.is_match?(str) ? "Found" : "Not Found"
+	puts (loc = MATCHER.where_is?(str)).empty? ? "Not Found" : loc.inspect
 end
