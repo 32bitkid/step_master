@@ -2,6 +2,9 @@
 $: << File.join(File.dirname(__FILE__), "lib")
 require 'step_master'
 require 'readline'
+require 'yaml'
+
+settings = File.exists?("settings.yml") ? YAML.load_file("settings.yml")  : {"step_paths" => ["**/*.rb"] }
 
 stty_save = `stty -g`.chomp
 trap('INT') { puts; system('stty', stty_save); exit }
@@ -14,8 +17,7 @@ Readline.completer_word_break_characters = ''
 Readline.completion_append_character = ''
 Readline.completion_proc = proc { |s| MATCHER.complete(s, :easy => true).collect { |x| s + x } }
 
-(Dir[File.join(File.expand_path("~"), %w[src Clearwave Kiosk KioskMVC  Features features ** *.rb])] +
-Dir[File.join(File.expand_path("~"), %w[src Clearwave Common Features ** *.rb])]).each do |f|
+settings["step_paths"].collect { |x| Dir[x] }.flatten.uniq.each do |f|
 	IO.read(f).scan(/^((?:Given|Then|When)[^\r\n]*)/).flatten.each { |step| MATCHER << step }
 end.flatten
 
