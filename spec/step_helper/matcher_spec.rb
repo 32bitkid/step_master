@@ -268,7 +268,42 @@ module StepMaster
 					@matcher.complete("Given a Provider Location").should have(1).result
 					@matcher.complete("Given ProviderLocation").should have(1).result
 				end
+			end
+			
+			describe "with an case insensitive switch" do
+				before :each do
+					@matcher << %q~Given /^(?:a )?provider ?location (?:named |called )?"([^\"]*)" exists$/i do |name|~
+				end
+				
+				it "should correctly auto-complete" do 
+					@matcher.complete("Given provider location").should have(1).result
+					@matcher.complete("Given a Provider Location").should have(1).result
+					@matcher.complete("Given ProviderLocation").should have(1).result
+				end
+			end
+			
+			
+			
+			describe "with an case insensitive switch" do
+				before :each do
+					@matcher << %q~Given /^this$/i do |name| # This is a comment~
+				end
+				
+				it "should correctly auto-complete" do 
+					@matcher.complete("Given").should have(1).result
+				end
+				
+				it "should correctly match" do
+					@matcher.is_match?("Given this").should be_true
+				end
+				
+				it "should return the original line with where_is?" do
+					@matcher.where_is?("Given this").should include(%q~Given /^this$/i do |name| # This is a comment~)
+				end
+				
+				
 			end			
+						
 			
 			
 		end		
