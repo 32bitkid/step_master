@@ -65,7 +65,7 @@ module StepMaster
 				regex.scan(CHUNK_REGEX).unshift(" ").unshift(step_type).collect { |i| StepItem.new(i, regex_options) }
 			end
 						
-			elements.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(full_line)			
+			elements.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(value)			
 		end
 		
 		# Returns all possible outcomes of a string.
@@ -92,6 +92,10 @@ module StepMaster
 		def is_match?(string)
 			find_possible(string).any?{ |x| x.terminal? }
 		end
+		
+		def where_is?(string)
+			find_possible(string).select{ |x| x.terminal? }.collect { |x| x.result }
+		end		
 		
 private
 		def find_possible(input, against = @match_table)
