@@ -27,7 +27,7 @@ none
 
 == INSTALL:
 
-	sudo gem install step_master -s http://32bitkid.gemcutter.org
+	sudo gem install step_master -s http://www.gemcutter.org
 
 == LICENSE:
 
