@@ -22,7 +22,7 @@ module StepMaster
 		
 		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/(\w*)\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/.freeze
 		ARG_NAMES_REGEX = /\|(.*)\|/
-		ARG_TEXT_REGEX = /\(.*?[^\\]\)\??/
+		ARG_TEXT_REGEX = /\(.*?[^\\]\)[\?\+\*]?/
 		NON_CAPTURE_REGEX = /\(\?\:/
 		CHUNK_REGEX = /\S+|\s\??/
 		
