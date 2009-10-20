@@ -27,6 +27,40 @@ module StepMaster
 			end
 		end
 		
+
+		
+		describe "#add()" do
+			it "accepts a string" do
+				@matcher.add(VALID_STEP)
+			end
+			
+			it "should not like a step it can't parse" do
+				lambda {
+					@matcher.add "This is not a step"
+				}.should raise_error(%q["This is not a step" is not a step])
+			end			
+			
+			describe "accepts optional paramters" do
+				it "should accept :file_path with just a file name" do
+					@matcher.add(VALID_STEP, :file_path => "step.rb")
+				end
+				
+				it "should accept :file_path an entire path" do
+					@matcher.add(VALID_STEP, :file_path => "/src/project/step.rb")
+				end
+				
+				it "should accept :file_path and :line_number" do
+					@matcher.add(VALID_STEP, :file_path => "/src/project/step.rb", :line_number => 6)
+				end
+				
+				it "should accept :format" do
+					@matcher.add(VALID_STEP, :format => :rb)
+				end				
+			end
+			
+		end
+				
+		
 		describe "#is_match?" do
 			
 			describe "with a terminal and longer step" do
@@ -305,17 +339,40 @@ module StepMaster
 			end	
 			
 		end		
+		
 		describe "#where_is?" do 
 			describe "with step with a comment" do
 				before :each do
-					@matcher << %q~Given /^this$/i do |name| # This is a comment~
+					@matcher << %q~Given /^this$/i do # This is a comment~
 				end
 				
 				it "should return the original line with where_is?" do
-					@matcher.where_is?("Given this").should include(%q~Given /^this$/i do |name| # This is a comment~)
+					@matcher.where_is?("Given this").should include(%q~Given /^this$/i do # This is a comment~)
 				end
 			end
+			
+			describe "with step with a file path" do
+				before :each do
+					@matcher.add(%q~Given /^this$/i do~, :file_path => "/src/test.rb")
+				end
+				
+				it "should return the original line with where_is?" do
+					@matcher.where_is?("Given this").should include(%q~/src/test.rb~)
+				end
+			end
+			
+			describe "with step with a file path and line_number" do
+				before :each do
+					@matcher.add(%q~Given /^this$/i do ~, :file_path => "/src/test.rb", :line_number => 6)
+				end
+				
+				it "should return the original line with where_is?" do
+					@matcher.where_is?("Given this").should include(%q~/src/test.rb:6~)
+				end
+			end			
+			
 		end
+		
 	end
 	
 	describe Matcher do

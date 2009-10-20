@@ -38,6 +38,11 @@ module StepMaster
 		#	  matcher << "Given /^this is a step$/ do"
 		#
 		def <<(value)
+			add(value, :format => :rb)
+		end
+		
+		def add(value, options = {})
+			
 			raise "#{value.inspect} is not a step" unless value =~ STEP_REGEX
 			
 			full_line = $&
@@ -65,7 +70,7 @@ module StepMaster
 				regex.scan(CHUNK_REGEX).unshift(" ").unshift(step_type).collect { |i| StepItem.new(i, regex_options) }
 			end
 						
-			elements.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(value)			
+			elements.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(value, options)					
 		end
 		
 		# Returns all possible outcomes of a string.
@@ -94,8 +99,13 @@ module StepMaster
 		end
 		
 		def where_is?(string)
-			find_possible(string).select{ |x| x.terminal? }.collect { |x| x.result }
-		end		
+			find_possible(string).select{ |x| x.terminal? }.collect { |x| x.file || x.result }
+		end
+		
+		def terminals(string)
+			find_possible(string).select{ |x| x.terminal? }
+		end
+		
 		
 private
 		def find_possible(input, against = @match_table)
