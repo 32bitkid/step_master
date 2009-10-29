@@ -4,5 +4,5 @@ $:.unshift(File.dirname(__FILE__)) unless
 require 'step_master/matcher'
 
 module StepMaster
-  VERSION = '0.0.5'
+  VERSION = '0.0.6'
 end

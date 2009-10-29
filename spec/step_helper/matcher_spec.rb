@@ -118,7 +118,20 @@ module StepMaster
 				it "should correctly match" do
 					@matcher.is_match?("Given this").should be_true
 				end
-			end	
+			end
+			
+			describe "with a weird self-repeating step" do
+				it "should correctly match" do
+					@matcher << %q[Given /^I have a scheduled encounter ((?:\d+\s(?:weeks?|days?|minutes?|hours?|seconds|)(?:,\s?|\s?and\s?| ))+)(from now|ago)$/ do |time, from_now_or_ago| ]
+					@matcher.is_match?("Given I have a scheduled encounter 3 weeks from now").should be_true
+				end
+				
+				it "should correctly match with repeat" do
+					@matcher << %q[Given /^I have a scheduled encounter ((?:\d+\s(?:weeks?|days?|minutes?|hours?|seconds|)(?:,\s?|\s?and\s?| ))+)(from now|ago)$/ do |time, from_now_or_ago| ]
+					@matcher.is_match?("Given I have a scheduled encounter 3 weeks and 5 minutes from now").should be_true
+				end				
+				
+			end
 		end
 		
 		

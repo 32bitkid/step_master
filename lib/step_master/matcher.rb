@@ -23,7 +23,7 @@ module StepMaster
 		STEP_REGEX = /^\s*(Given|Then|When)\s*\(?\s*\/\^?(.*)\/(\w*)\s*\)?\s*(?:do|\{)\s*(\|[^\|]+\|)?/.freeze
 		ARG_NAMES_REGEX = /\|(.*)\|/
 		ARG_TEXT_REGEX = /\(.*?[^\\]\)[\?\+\*]?/
-		NON_CAPTURE_REGEX = /\(\?\:/
+		NON_CAPTURE_REGEX = /^\(\?\:/
 		CHUNK_REGEX = /\S+|\s\??/
 		
 		attr_reader :match_table
@@ -52,25 +52,21 @@ module StepMaster
 			args = $4
 			
 			arg_names = (args =~ ARG_NAMES_REGEX) ? $1.split(/\s*,\s*/) : []
-			arg_regexs = regex.chomp("$").scan(ARG_TEXT_REGEX)
+			arg_regexs = extract_captures(regex)
 			
 			arg_objects = arg_regexs.collect do |x|
 				is_non_capture = (x =~ NON_CAPTURE_REGEX) != nil
 				StepVariable.new(x, regex_options, (is_non_capture) ? nil : arg_names.shift)
 			end
 			
-			
-			elements = if arg_regexs.length > 0
-				regex.split(Regexp.union(arg_regexs.collect { |x|
-					Regexp.new(Regexp.escape(x))
-				})).collect { |x|
+			if arg_regexs.length > 0
+				regex.split(Regexp.union(arg_regexs.collect { |x| Regexp.new(Regexp.escape(x)) })).collect { |x|
 					x.scan(CHUNK_REGEX).collect { |i| StepItem.new(i, regex_options) }
-				}.zip(arg_objects).flatten.compact.unshift(StepItem.new(" ", regex_options)).unshift(StepItem.new(step_type, regex_options))
+				}.+(Array.new(5)).zip(arg_objects).flatten.compact.unshift(StepItem.new(" ", regex_options)).unshift(StepItem.new(step_type, regex_options))
 			else
 				regex.scan(CHUNK_REGEX).unshift(" ").unshift(step_type).collect { |i| StepItem.new(i, regex_options) }
-			end
-						
-			elements.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(value, options)					
+			end.inject(@match_table) { |parent, i| parent[i] ||= Possible.new }.terminal!(value, options)					
+			
 		end
 		
 		# Returns all possible outcomes of a string.
@@ -136,5 +132,39 @@ private
 			end
 			collection
 		end
+		
+		def extract_captures(t)
+			captures = []
+			index = 0
+			while true do
+				break unless index = t.index(/\(/, index) 
+				index += 1
+				next if t[index-2,1] == "\\"
+				
+				close, depth = index - 1, 1
+				
+				begin
+					next_close = t.index(/[^\\]\)/, close)
+					next_open = t.index(/[^\\]\(/, close)
+					
+					raise "Unmatched" unless next_close
+					
+					if !next_open.nil? and next_open < next_close
+						close = next_open + 1
+						depth += 1
+					else
+						close = next_close + 1
+						depth -= 1
+					end
+					
+				end while depth > 0
+				
+				close += $&.length if t[close + 1..-1] =~ /^[\+\*\?]/
+				captures << t[index -1..close]
+				
+				index = close
+			end
+			captures
+		end		
 	end
 end
